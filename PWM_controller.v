@@ -2,7 +2,7 @@ module PWM_controller
   #(parameter t1 = 6'd20,
     parameter t2 = 6'd20) 
   (
-	input start,clk,rst,
+    input start,clk,rst,
     output reg [3:0] d_c,
     output en
 );
@@ -61,7 +61,7 @@ always @(posedge clk or posedge rst) begin
         end
         if ( inc_counter == 5'd20) begin
             flag <= 1'b0;
-			inc_counter <= 5'b0;
+	    inc_counter <= 5'b0;
         end
     end  
 end
