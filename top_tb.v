@@ -16,7 +16,7 @@ module top_tb;
   end
   
   initial begin 
-  	rst = 1'b1;
+    rst = 1'b1;
     clk = 1'b0;
     #25;
     rst = 1'b0; 
