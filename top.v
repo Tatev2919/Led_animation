@@ -1,10 +1,7 @@
-`include "timer.sv"
-`include "PWM_controller.sv"
-`include "PWM.sv" 
 module top (
-	input  		 clk,
+    input  	     clk,
     input  	     rst,
-  	input  [1:0] mode,
+    input      [1:0] mode,
     output reg [7:0] led_out 
 );
   reg trig,rst_timer,start;
