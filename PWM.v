@@ -1,7 +1,7 @@
 module PWM
   #(parameter T = 6'd10) 
   (
-	input clk,rst,
+    input clk,rst,
     input [3:0] duty_cycle,
     output reg pwm_out
 );
