@@ -62,7 +62,7 @@ always @(posedge clk or posedge rst) begin
       end
       else begin 
       if(mode == 2'b0) begin
-          	trig <= 1'b1; 
+            trig <= 1'b1; 
             if(led_out == 8'b0 && cnt == 5'd7) begin  
               led_out[7] <= 1'b1;
             end
@@ -86,11 +86,11 @@ always @(posedge clk or posedge rst) begin
                   	led_out[7] <= 1'b1;
                   end
               	  if(cnt1 == 5'd9) begin 
-                    led_out[7] <= 1'b0;
+                         led_out[7] <= 1'b0;
                   end
                   else if (cnt1 == 5'd1) begin 
-                    led_out[7] <= 1'b1;
-                    cnt1 <= 5'd16;
+			  led_out[7] <= 1'b1;
+			  cnt1 <= 5'd16;
                   end
             end
       end
@@ -102,10 +102,10 @@ always @(posedge clk or posedge rst) begin
             if (i == 4'd8) begin
               	i  <= 4'd7;
             end
-        	if(en) begin 
+            if(en) begin 
                 i <= i - 4'd1;
             end
-        	if (d_c == 4'b0) begin 
+            if (d_c == 4'b0) begin 
                 start <= 1'b1;
             end
             else 
