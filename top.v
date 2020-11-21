@@ -1,8 +1,8 @@
 module top (
-    input  	     clk,
-    input  	     rst,
-    input      [1:0] mode,
-    output reg [7:0] led_out 
+	input  		 clk,
+	input  	         rst,
+	input      [1:0] mode,
+	output reg [7:0] led_out 
 );
   reg trig,rst_timer,start;
   wire out_pulse,pwm_out,en;
@@ -21,7 +21,7 @@ module top (
   );
   
    PWM_controller #(
-   .t1(6'd30),.t2(6'd35))
+   .t1(6'd40),.t2(6'd35))
    p2 (
     .clk(clk),
     .rst(rst),
@@ -30,7 +30,7 @@ module top (
     .en(en) 
   );
   
-  PWM #(.T(6'd20)) p1 (
+  PWM #(.T(6'd10)) p1 (
     .clk(clk),
     .rst(rst),
     .duty_cycle(d_c),
@@ -105,7 +105,7 @@ always @(posedge clk or posedge rst) begin
         	if(en) begin 
                 i <= i - 4'd1;
             end
-        	if (d_c == 4'b0 || d_c == 4'd10) begin 
+        	if (d_c == 4'b0) begin 
                 start <= 1'b1;
             end
             else 

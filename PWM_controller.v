@@ -2,9 +2,9 @@ module PWM_controller
   #(parameter t1 = 6'd20,
     parameter t2 = 6'd20) 
   (
-    input start,clk,rst,
-    output reg [3:0] d_c,
-    output en
+   input start,clk,rst,
+   output reg [3:0] d_c,
+   output en
 );
   
 reg [4:0] inc_counter;
@@ -27,6 +27,7 @@ timer #(.N(6)) tim1 (
     .trig (trig),
     .out_pulse (out_pulse)
 );
+  
 assign en = (inc_counter == 5'd20);
   
 always @(posedge clk or posedge rst) begin 
@@ -46,23 +47,22 @@ always @(posedge clk or posedge rst) begin
           if(out_pulse) begin  
               inc_counter <= inc_counter + 5'b1;
           end
-        if (out_pulse != rst_timer ) begin 
-        	trig <= 1'b0;
-        end
-        
-        if(inc_counter == 5'd10) begin
-            load <= t2;
-            if ( out_pulse ) begin 
-                load <= t1;
-                flag <= 1'b0;
-                inc_counter <= inc_counter + 1;
+          if (out_pulse != rst_timer ) begin 
+              trig <= 1'b0;
+          end
+
+          if(inc_counter == 5'd10) begin
+              load <= t2;
+              if ( out_pulse ) begin 
+                  load <= t1;
+                  inc_counter <= inc_counter + 1;
+              end
             end
           end
-        end
-        if ( inc_counter == 5'd20) begin
-            flag <= 1'b0;
-	    inc_counter <= 5'b0;
-        end
+          if ( inc_counter == 5'd20) begin
+              flag <= 1'b0;
+              inc_counter <= 5'b0;
+          end
     end  
 end
   

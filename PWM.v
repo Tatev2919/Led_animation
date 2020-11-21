@@ -1,9 +1,9 @@
 module PWM
   #(parameter T = 6'd10) 
   (
-    input clk,rst,
-    input [3:0] duty_cycle,
-    output reg pwm_out
+   input clk,rst,
+   input [3:0] duty_cycle,
+   output reg pwm_out
 );
 reg [3:0] duty_cycle_r;  
 reg  [4:0]  counter;
@@ -26,7 +26,7 @@ wire [4:0]  t2 = (T*duty_cycle_r/10);
     begin
       if (rst)
         begin 
-        	pwm_out = 1'b0;  
+            pwm_out = 1'b0;  
         end
       else 
         begin 

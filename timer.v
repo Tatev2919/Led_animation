@@ -1,10 +1,10 @@
 module timer
   #(parameter N = 3)
   (
-    input clk,rst,
-    input [N-1:0] load,
-    input trig,
-    output reg out_pulse
+   input clk,rst,
+   input [N-1:0] load,
+   input trig,
+   output reg out_pulse
 );
   reg [N-1:0] cnt;
   reg trig_r;
