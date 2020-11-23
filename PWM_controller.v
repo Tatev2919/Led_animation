@@ -73,7 +73,7 @@ always @(*)
         d_c = 5'd0;
       else 
         if (flag) begin 
-          if(inc_counter <= 5'd10)
+          if(inc_counter <= K/2)
             d_c = inc_counter;
           else 
             d_c = K - inc_counter;
