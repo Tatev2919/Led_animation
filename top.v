@@ -21,7 +21,7 @@ module top (
   );
   
    PWM_controller #(
-   .t1(6'd40),.t2(6'd35))
+   .t1(6'd40),.t2(6'd35), .K(5'd20) )
    p2 (
     .clk(clk),
     .rst(rst),
