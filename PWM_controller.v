@@ -5,7 +5,7 @@ module PWM_controller
   (
    input start,clk,rst,
    output reg [3:0] d_c,
-   output en
+   output overflow
 );
   
 reg [4:0] inc_counter;
@@ -14,14 +14,14 @@ reg trig;
 reg [5:0] load; 
 reg rst_timer,flag;
   
-PWM #(.T(6'd10)) p1 (
+PWM #(.T(6'd10)) PWM_pc (
     .clk(clk),
     .rst(rst),
     .duty_cycle(d_c),
     .pwm_out(pwm_out)
 );
   
-timer #(.N(6)) tim1 (
+timer #(.N(6)) tim_pc (
     .clk (clk),
     .rst (rst_timer),
     .load (load),
@@ -29,7 +29,7 @@ timer #(.N(6)) tim1 (
     .out_pulse (out_pulse)
 );
   
-assign en = (inc_counter == K);
+assign overflow = (inc_counter == K)? out_pulse: 1'b0;
   
 always @(posedge clk or posedge rst) begin 
     if(rst) begin
@@ -39,7 +39,7 @@ always @(posedge clk or posedge rst) begin
     end
     else begin 
       if(start) begin 
-        flag  <= 1'b1;
+          flag  <= 1'b1;
       end
       if (flag) begin 
           trig <= 1'b1;
@@ -47,6 +47,10 @@ always @(posedge clk or posedge rst) begin
           rst_timer <= out_pulse;
           if(out_pulse) begin  
               inc_counter <= inc_counter + 5'b1;
+	      if ( inc_counter == K ) begin
+	      		flag <= 1'b0;
+	      		inc_counter <= 5'b0;
+	      end
           end
           if (out_pulse != rst_timer ) begin 
               trig <= 1'b0;
@@ -56,13 +60,8 @@ always @(posedge clk or posedge rst) begin
               load <= t2;
               if ( out_pulse ) begin 
                   load <= t1;
-                  inc_counter <= inc_counter + 1;
               end
             end
-          end
-          if ( inc_counter == K ) begin
-              flag <= 1'b0;
-              inc_counter <= 5'b0;
           end
     end  
 end
