@@ -5,14 +5,14 @@ module top (
 	output reg [7:0] led_out 
 );
   reg trig,rst_timer,start;
-  wire out_pulse,pwm_out,en;
+  wire out_pulse,pwm_out,overflow;
   reg  [4:0] cnt, cnt1,cnt2;
   reg  [1:0] mode_r;
   reg  [5:0] load;
   wire [3:0] d_c;
-  reg  [3:0] i;
+  reg  [2:0] i;
    
-  timer #(.N(6)) t1(
+  timer #(.N(6)) top_tim(
     .clk(clk),
     .rst(rst_timer),
     .trig(trig),
@@ -22,15 +22,15 @@ module top (
   
    PWM_controller #(
    .t1(6'd40),.t2(6'd35), .K(5'd20) )
-   p2 (
+   PWM_cont_top (
     .clk(clk),
     .rst(rst),
     .d_c(d_c),
     .start(start),
-    .en(en) 
+    .overflow(overflow) 
   );
   
-  PWM #(.T(6'd10)) p1 (
+  PWM #(.T(6'd10)) PWM_top (
     .clk(clk),
     .rst(rst),
     .duty_cycle(d_c),
@@ -47,7 +47,7 @@ always @(posedge clk or posedge rst) begin
         cnt <= 5'd8;
         cnt1 <= 5'd16;
         cnt2 <= 5'd20; 
-        i <= 4'd8;
+        i <= 3'd7;
     end
     else begin 
       if(mode != mode_r) begin 
@@ -96,22 +96,17 @@ always @(posedge clk or posedge rst) begin
       end
       else if (mode == 2'd2) begin 
             led_out[i] <= pwm_out; 
-            if( i == -4'd1) begin 
-               i <= 4'd7; 
-            end
-            if (i == 4'd8) begin
-              	i  <= 4'd7;
-            end
-            if(en) begin 
+            if(overflow) begin 
                 i <= i - 4'd1;
             end
             if (d_c == 4'b0) begin 
                 start <= 1'b1;
             end
             else 
-              start <= 1'b0;
-      
-        //$monitor (led_out[7] , "-----", pwm_out , "**" , i);
+                start <= 1'b0;
+	    if (i == 5) begin 
+            	$monitor (led_out[5] , "-----", pwm_out , "**" , i);
+	    end	
       end
       else begin  
           trig <= 1'b0;
