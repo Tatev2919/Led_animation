@@ -3,7 +3,7 @@ module top_tb;
   reg [1:0] mode;
   wire [7:0] led_out;
   
-  top t11(
+  top t(
     .clk(clk),
     .rst(rst),
     .mode(mode),
@@ -25,7 +25,7 @@ module top_tb;
     @(negedge clk ) mode <= 2'b1;
     #4500;
     @(negedge clk ) mode <= 2'd2;
-    #100000;
+    #250000;
     $finish;
   end
   
