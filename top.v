@@ -104,9 +104,7 @@ always @(posedge clk or posedge rst) begin
             end
             else 
                 start <= 1'b0;
-	    if (i == 5) begin 
-            	$monitor (led_out[5] , "-----", pwm_out , "**" , i);
-	    end	
+            $monitor (led_out[5] , "-----", pwm_out , "**" , i);
       end
       else begin  
           trig <= 1'b0;
