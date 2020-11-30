@@ -5,7 +5,7 @@ module PWM_controller
   (
    input start,clk,rst,
    output reg [3:0] d_c,
-   output overflow
+   output overflow,overflow1
 );
   
 reg [4:0] inc_counter;
@@ -30,6 +30,8 @@ timer #(.N(6)) tim_pc (
 );
   
 assign overflow = (inc_counter == K)? out_pulse: 1'b0;
+
+assign overflow1 = (inc_counter == K/2)? out_pulse: 1'b0;
   
 always @(posedge clk or posedge rst) begin 
     if(rst) begin

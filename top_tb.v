@@ -16,15 +16,15 @@ module top_tb;
   end
   
   initial begin 
-  	rst = 1'b1;
+    rst = 1'b1;
     clk = 1'b0;
     #25;
     rst = 1'b0; 
-    @(negedge clk ) mode <= 2'b0;
-    #2510;
+    @(negedge clk ) mode <= 2'b11;
+   /* #2510;
     @(negedge clk ) mode <= 2'b1;
     #4500;
-    @(negedge clk ) mode <= 2'd2;
+    @(negedge clk ) mode <= 2'd2;*/
     #250000;
     $finish;
   end

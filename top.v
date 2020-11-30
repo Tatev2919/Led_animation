@@ -5,12 +5,13 @@ module top (
 	output reg [7:0] led_out 
 );
   reg trig,rst_timer,start;
-  wire out_pulse,pwm_out,overflow;
+  wire out_pulse,pwm_out,overflow,half_overflow;
   reg  [4:0] cnt, cnt1,cnt2;
   reg  [1:0] mode_r;
-  reg  [5:0] load;
+  reg  [5:0] load,t1;
   wire [3:0] d_c;
   reg  [2:0] i;
+  reg [15:0] t2;
    
   timer #(.N(6)) top_tim(
     .clk(clk),
@@ -20,15 +21,16 @@ module top (
     .load(load)
   );
   
-   PWM_controller #(
-   .t1(6'd40),.t2(6'd35), .K(5'd20) )
+   /*PWM_controller #(
+   .t1(6'd40),.t2(16'd50), .K(5'd20) )
    PWM_cont_top (
     .clk(clk),
     .rst(rst),
     .d_c(d_c),
     .start(start),
-    .overflow(overflow) 
-  );
+    .overflow(overflow),
+    .overflow1(half_overflow) 
+  );*/
   
   PWM #(.T(6'd10)) PWM_top (
     .clk(clk),
@@ -36,8 +38,23 @@ module top (
     .duty_cycle(d_c),
     .pwm_out(pwm_out)
   );
-  
-  
+ function PWM_gen;
+ 	input [3:0] i;
+	begin 
+        t1 <= 6'd40;
+	t2 <= t1*10*i;	
+       
+	PWM_controller #( .t1(6'd40),.t2(16'd2800), .K(5'd20) )
+	PWM_cont_top (
+			.clk(clk),
+			.rst(rst),
+			.d_c(d_c),
+			.start(start),
+			.overflow(overflow),
+			.overflow1(half_overflow) 
+		     );
+	end 
+  endfunction
 always @(posedge clk or posedge rst) begin 
     if(rst) begin
         mode_r <= 2'b0;
@@ -48,6 +65,7 @@ always @(posedge clk or posedge rst) begin
         cnt1 <= 5'd16;
         cnt2 <= 5'd20; 
         i <= 3'd7;
+//	t2 <= 6'd35;
     end
     else begin 
       if(mode != mode_r) begin 
@@ -104,9 +122,19 @@ always @(posedge clk or posedge rst) begin
             end
             else 
                 start <= 1'b0;
-	    if (i == 5) begin 
-            	$monitor (led_out[5] , "-----", pwm_out , "**" , i);
-	    end	
+            $monitor (led_out[5] , "-----", pwm_out , "**" , i);
+      end
+      else if (mode == 2'd3) begin 
+      	   //led_out[7:i] <= {{8-i}pwm_out};
+           if(half_overflow) begin 
+	   	i <= i - 4'd1; 
+           	PWM_gen(i);
+           end
+           if (d_c == 4'd10 || d_c == 4'd0) begin 
+	   	start <= 1'b1;
+           end
+	   else 
+		start <= 1'b0;
       end
       else begin  
           trig <= 1'b0;
