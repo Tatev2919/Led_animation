@@ -1,17 +1,18 @@
 module PWM_controller
-  #(parameter t1 = 6'd20,
+  #(parameter t1 =16'd20,
     parameter t2 = 6'd20,
     parameter K = 5'd20 ) 
   (
    input start,clk,rst,
-   output reg [3:0] d_c,
-   output overflow,overflow1
+   //input [15:0] t2,
+   output overflow,overflow1,pwm_out
 );
   
 reg [4:0] inc_counter;
-wire pwm_out,out_pulse;
+wire out_pulse;
 reg trig;
-reg [5:0] load; 
+reg [3:0] d_c; 
+reg [15:0] load; 
 reg rst_timer,flag;
   
 PWM #(.T(6'd10)) PWM_pc (
@@ -21,7 +22,7 @@ PWM #(.T(6'd10)) PWM_pc (
     .pwm_out(pwm_out)
 );
   
-timer #(.N(6)) tim_pc (
+timer #(.N(16)) tim_pc (
     .clk (clk),
     .rst (rst_timer),
     .load (load),
