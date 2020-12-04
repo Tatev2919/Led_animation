@@ -1,19 +1,20 @@
 module top (
 	input  		 clk,
 	input  	         rst,
-	input      [1:0] mode,
-	output reg [7:0] led_out 
+	input   [1:0] mode,
+	output  [7:0] led_out 
 );
-  reg trig,rst_timer,start;
-  wire out_pulse,pwm_out,overflow,half_overflow;
-  reg  [4:0] cnt, cnt1,cnt2;
+  reg trig,rst_timer,st,cnt2,start;
+  reg  [7:0] led_out0,led_out1;
+  wire out_pulse,pwm_outi,tmp;
+  wire [7:0] overflow,half_overflow;
+  reg  [4:0] cnt, cnt1;
   reg  [1:0] mode_r;
-  reg  [5:0] load,t1;
-  wire [3:0] d_c;
+  reg  [15:0] load;
   reg  [2:0] i;
-  reg [15:0] t2;
-   
-  timer #(.N(6)) top_tim(
+  wire [7:0] cont_out,start_tmp;
+  
+  timer #(.N(16)) top_tim(
     .clk(clk),
     .rst(rst_timer),
     .trig(trig),
@@ -21,58 +22,44 @@ module top (
     .load(load)
   );
   
-   /*PWM_controller #(
-   .t1(6'd40),.t2(16'd50), .K(5'd20) )
-   PWM_cont_top (
-    .clk(clk),
-    .rst(rst),
-    .d_c(d_c),
-    .start(start),
-    .overflow(overflow),
-    .overflow1(half_overflow) 
-  );*/
-  
-  PWM #(.T(6'd10)) PWM_top (
-    .clk(clk),
-    .rst(rst),
-    .duty_cycle(d_c),
-    .pwm_out(pwm_out)
-  );
- function PWM_gen;
- 	input [3:0] i;
-	begin 
-        t1 <= 6'd40;
-	t2 <= t1*10*i;	
-       
-	PWM_controller #( .t1(6'd40),.t2(16'd2800), .K(5'd20) )
+genvar j;
+generate 
+	for (j = 1 ; j < 8; j = j+1) begin 
+        PWM_controller #(.t1(6'd40),.t2(20), .K(5'd20) )
 	PWM_cont_top (
 			.clk(clk),
 			.rst(rst),
-			.d_c(d_c),
-			.start(start),
-			.overflow(overflow),
-			.overflow1(half_overflow) 
+			.start(start_tmp[j]),
+			.overflow(overflow[j]),
+			.overflow1(half_overflow[j]),
+ 			.pwm_out(cont_out[j])
 		     );
-	end 
-  endfunction
+        
+	end
+endgenerate
+
+assign start_tmp[7:1] = (mode == 2) ? overflow[7:1]:half_overflow[7:1];
+assign led_out = (mode == 0) ? led_out0 : 
+      		 (mode == 1) ? led_out1 : cont_out;
+assign start_tmp[0] = (mode == 2) ? st : 1'b0;
+	
 always @(posedge clk or posedge rst) begin 
     if(rst) begin
         mode_r <= 2'b0;
         load <= 6'd10;
     	start <= 1'b0;
-        led_out <= 8'b00000000;
+        led_out0 <= 8'b00000000;
+        led_out1 <= 8'b00000000;
         cnt <= 5'd8;
         cnt1 <= 5'd16;
-        cnt2 <= 5'd20; 
         i <= 3'd7;
-//	t2 <= 6'd35;
+        st <= 1'b0;
     end
     else begin 
       if(mode != mode_r) begin 
-            led_out <= 8'b00000000;
+            //led_out <= 8'b00000000;
             cnt <= 5'd8;
             cnt1 <= 5'd16;
-            cnt2 <= 5'd20;
             mode_r <= mode;
       end
       if(rst_timer) begin 
@@ -81,60 +68,59 @@ always @(posedge clk or posedge rst) begin
       else begin 
       if(mode == 2'b0) begin
             trig <= 1'b1; 
-            if(led_out == 8'b0 && cnt == 5'd7) begin  
-              led_out[7] <= 1'b1;
+            if(led_out0 == 8'b0 && cnt == 5'd7) begin  
+              led_out0[7] <= 1'b1;
             end
             if(out_pulse) begin 
-              led_out <= (led_out>>1'b1);
+              led_out0 <= (led_out0>>1'b1);
               cnt <= cnt - 5'b1;
               trig <= 1'b0;
               if(cnt == 8'b0) begin
                  cnt <= 5'd8;
-                 led_out[7] <= 1'b1;
+                 led_out0[7] <= 1'b1;
               end 
             end
       end
       else if (mode == 2'b1 ) begin 
             trig <= 1'b1;
             if(out_pulse) begin 
-                  led_out <= (led_out >> 1'b1);
+                  led_out1 <= (led_out1 >> 1'b1);
                   cnt1 <= cnt1 - 5'b1;
               	  trig <= 1'b0;
-                  if( cnt1 >=5'd10 ) begin 
-                  	led_out[7] <= 1'b1;
+                  if( cnt1 >=5'd9 ) begin 
+                  	led_out1[7] <= 1'b1;
                   end
-              	  if(cnt1 == 5'd9) begin 
-                         led_out[7] <= 1'b0;
+              	  if(cnt1 == 5'd7) begin 
+                         led_out1[7] <= 1'b0;
                   end
-                  else if (cnt1 == 5'd1) begin 
-			  led_out[7] <= 1'b1;
+                  else if (cnt1 == 5'd0) begin 
+			  led_out1[7] <= 1'b1;
 			  cnt1 <= 5'd16;
                   end
             end
       end
       else if (mode == 2'd2) begin 
-            led_out[i] <= pwm_out; 
-            if(overflow) begin 
-                i <= i - 4'd1;
+          //  start_tmp[0] <= st ? overflow[7]:start;
+            if (cnt2 == 1'b1 ) begin 
+	       st <= 0;
             end
-            if (d_c == 4'b0) begin 
-                start <= 1'b1;
-            end
-            else 
-                start <= 1'b0;
-            $monitor (led_out[5] , "-----", pwm_out , "**" , i);
+            else begin 
+	    	st <= 1'b1;
+	    	cnt2 <= 1'b1; 
+	    end 
       end
       else if (mode == 2'd3) begin 
-      	   //led_out[7:i] <= {{8-i}pwm_out};
-           if(half_overflow) begin 
-	   	i <= i - 4'd1; 
-           	PWM_gen(i);
+      	   //led_out[7] <= PWM_cont_top.pwm_out;
+         //  t2 <= 40 * 10 *i;  
+           /*if(half_overflow) begin 
+	   	i <= i - 4'd1;
+                PWM_gen1(i);
            end
            if (d_c == 4'd10 || d_c == 4'd0) begin 
 	   	start <= 1'b1;
            end
 	   else 
-		start <= 1'b0;
+		start <= 1'b0;*/
       end
       else begin  
           trig <= 1'b0;
