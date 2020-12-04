@@ -1,47 +1,59 @@
 module top (
-	input  		 clk,
-	input  	         rst,
+	input  	      clk,
+	input  	      rst,
 	input   [1:0] mode,
 	output  [7:0] led_out 
 );
   reg trig,rst_timer,st,cnt2,start;
   reg  [7:0] led_out0,led_out1;
-  wire out_pulse,pwm_outi,tmp;
+  wire out_pulse;
   wire [7:0] overflow,half_overflow;
   reg  [4:0] cnt, cnt1;
   reg  [1:0] mode_r;
-  reg  [15:0] load;
+  reg  [12:0] load;
   reg  [2:0] i;
   wire [7:0] cont_out,start_tmp;
-  
-  timer #(.N(16)) top_tim(
+  //reg  [12:0] t2;
+
+  timer #(.N(13)) top_tim(
     .clk(clk),
     .rst(rst_timer),
     .trig(trig),
     .out_pulse(out_pulse),
     .load(load)
   );
+
+PWM_controller #(.t1(6'd40), .K(5'd20) )
+PWM_cont_top0 (
+		.clk(clk),
+		.rst(rst),
+		.start(start_tmp[0]),
+		.overflow(overflow[0]),
+		.overflow1(half_overflow[0]),
+		.pwm_out(cont_out[0]),
+	 	.t2(13'd40)
+	     );
   
 genvar j;
 generate 
 	for (j = 1 ; j < 8; j = j+1) begin 
-        PWM_controller #(.t1(6'd40),.t2(20), .K(5'd20) )
+        PWM_controller #(.t1(6'd40),.K(5'd20) )
 	PWM_cont_top (
 			.clk(clk),
 			.rst(rst),
 			.start(start_tmp[j]),
 			.overflow(overflow[j]),
 			.overflow1(half_overflow[j]),
- 			.pwm_out(cont_out[j])
+ 			.pwm_out(cont_out[j]),
+			.t2(13'd40)
 		     );
-        
 	end
 endgenerate
 
-assign start_tmp[7:1] = (mode == 2) ? overflow[7:1]:half_overflow[7:1];
+assign start_tmp[7:1] = (mode == 2) ? overflow[6:0]:half_overflow[6:0];
 assign led_out = (mode == 0) ? led_out0 : 
       		 (mode == 1) ? led_out1 : cont_out;
-assign start_tmp[0] = (mode == 2) ? st : 1'b0;
+assign start_tmp[0] = st;
 	
 always @(posedge clk or posedge rst) begin 
     if(rst) begin
@@ -57,7 +69,6 @@ always @(posedge clk or posedge rst) begin
     end
     else begin 
       if(mode != mode_r) begin 
-            //led_out <= 8'b00000000;
             cnt <= 5'd8;
             cnt1 <= 5'd16;
             mode_r <= mode;

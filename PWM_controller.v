@@ -1,10 +1,9 @@
 module PWM_controller
   #(parameter t1 =16'd20,
-    parameter t2 = 6'd20,
     parameter K = 5'd20 ) 
   (
    input start,clk,rst,
-   //input [15:0] t2,
+   input [12:0] t2,
    output overflow,overflow1,pwm_out
 );
   
@@ -12,7 +11,7 @@ reg [4:0] inc_counter;
 wire out_pulse;
 reg trig;
 reg [3:0] d_c; 
-reg [15:0] load; 
+reg [12:0] load; 
 reg rst_timer,flag;
   
 PWM #(.T(6'd10)) PWM_pc (
@@ -22,7 +21,7 @@ PWM #(.T(6'd10)) PWM_pc (
     .pwm_out(pwm_out)
 );
   
-timer #(.N(16)) tim_pc (
+timer #(.N(13)) tim_pc (
     .clk (clk),
     .rst (rst_timer),
     .load (load),
@@ -32,7 +31,7 @@ timer #(.N(16)) tim_pc (
   
 assign overflow = (inc_counter == K)? out_pulse: 1'b0;
 
-assign overflow1 = (inc_counter == K/2)? out_pulse: 1'b0;
+assign overflow1 = (inc_counter == (K/2-1))? out_pulse: 1'b0;
   
 always @(posedge clk or posedge rst) begin 
     if(rst) begin
