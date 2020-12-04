@@ -20,7 +20,7 @@ module top_tb;
     clk = 1'b0;
     #25;
     rst = 1'b0; 
-    @(negedge clk ) mode <= 2'b11;
+    @(negedge clk ) mode <= 2'd2;
    /* #2510;
     @(negedge clk ) mode <= 2'b1;
     #4500;
