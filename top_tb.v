@@ -21,10 +21,10 @@ module top_tb;
     #25;
     rst = 1'b0; 
     @(negedge clk ) mode <= 2'd2;
-   /* #2510;
-    @(negedge clk ) mode <= 2'b1;
-    #4500;
-    @(negedge clk ) mode <= 2'd2;*/
+    #50000;
+    @(negedge clk ) mode <= 2'd3;
+    //#4500;
+    //@(negedge clk ) mode <= 2'd2;
     #250000;
     $finish;
   end
