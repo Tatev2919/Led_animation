@@ -13,7 +13,7 @@ module top (
   reg  [12:0] load;
   reg  [2:0] i;
   wire [7:0] cont_out,start_tmp;
-  //reg  [12:0] t2;
+  reg [12:0] t2;
 
   timer #(.N(13)) top_tim(
     .clk(clk),
@@ -31,7 +31,7 @@ PWM_cont_top0 (
 		.overflow(overflow[0]),
 		.overflow1(half_overflow[0]),
 		.pwm_out(cont_out[0]),
-	 	.t2(13'd40)
+	 	.t2(t2)
 	     );
   
 genvar j;
@@ -45,7 +45,7 @@ generate
 			.overflow(overflow[j]),
 			.overflow1(half_overflow[j]),
  			.pwm_out(cont_out[j]),
-			.t2(13'd40)
+			.t2(t2)
 		     );
 	end
 endgenerate
@@ -53,7 +53,7 @@ endgenerate
 assign start_tmp[7:1] = (mode == 2) ? overflow[6:0]:half_overflow[6:0];
 assign led_out = (mode == 0) ? led_out0 : 
       		 (mode == 1) ? led_out1 : cont_out;
-assign start_tmp[0] = st;
+assign start_tmp[0] = (mode == 2) ?  st|overflow[7] : st|half_overflow[7];
 	
 always @(posedge clk or posedge rst) begin 
     if(rst) begin
@@ -72,6 +72,8 @@ always @(posedge clk or posedge rst) begin
             cnt <= 5'd8;
             cnt1 <= 5'd16;
             mode_r <= mode;
+ 	    st <= 1'b1;
+ 	 //   cnt2 <= 1'b1;
       end
       if(rst_timer) begin 
       	trig <= 0;
@@ -111,8 +113,8 @@ always @(posedge clk or posedge rst) begin
             end
       end
       else if (mode == 2'd2) begin 
-          //  start_tmp[0] <= st ? overflow[7]:start;
-            if (cnt2 == 1'b1 ) begin 
+            t2 <= 13'd40;
+ 	    if (cnt2 == 1'b1 ) begin 
 	       st <= 0;
             end
             else begin 
@@ -121,17 +123,14 @@ always @(posedge clk or posedge rst) begin
 	    end 
       end
       else if (mode == 2'd3) begin 
-      	   //led_out[7] <= PWM_cont_top.pwm_out;
-         //  t2 <= 40 * 10 *i;  
-           /*if(half_overflow) begin 
-	   	i <= i - 4'd1;
-                PWM_gen1(i);
-           end
-           if (d_c == 4'd10 || d_c == 4'd0) begin 
-	   	start <= 1'b1;
-           end
-	   else 
-		start <= 1'b0;*/
+            t2 <= 13'd40;
+ 	    if (cnt2 == 1'b1 ) begin 
+	       st <= 0;
+            end
+            else begin 
+	    	st <= 1'b1;
+	    	cnt2 <= 1'b1; 
+	    end 
       end
       else begin  
           trig <= 1'b0;
